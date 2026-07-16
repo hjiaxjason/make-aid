@@ -1,0 +1,10 @@
+[package]
+name = "make-aid"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Clap handles subcommands automatically
+clap = { version = "4.4", features = ["derive"] }
+# Colored makes terminal output beautiful
+colored = "2.1"
