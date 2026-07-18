@@ -49,8 +49,11 @@ fn extract_includes(file_path: &Path) -> io::Result<HashSet<PathBuf>> {
         }
 
         if re.is_match(line) {
-            let captured = re.captures(line).unwrap();
-            includes.insert(captured.get(1).as_str());
+            if let Some(captured) = re.captures(line) {
+                if let Some(group1) = captured.get(1) {
+                    includes.insert(group1.as_str());
+                }
+            }
         }
     }
 
