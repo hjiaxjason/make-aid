@@ -8,3 +8,7 @@ edition = "2024"
 clap = { version = "4.4", features = ["derive"] }
 # Colored makes terminal output beautiful
 colored = "2.1"
+# Crate walkdir provides recursive directory traversal
+walkdir = "2"
+# Regex
+regex = "1"
