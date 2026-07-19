@@ -10,7 +10,7 @@ fn extract_includes(file_path: &Path) -> io::Result<HashSet<PathBuf>> {
     let mut file = File::open(path)?;
     let mut reader = BufReader::new(file);
 
-    let re = Regex::new(r#"#include\s*["<]([^">]+)[">]"#).unwrap();
+    let re = Regex::new(r#"#include\s*(["<][^">]+[">])"#).unwrap();
 
     let mut line = String::new();
 
