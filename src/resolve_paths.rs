@@ -33,28 +33,35 @@ struct SearchPaths {
 /// * Returns `None` if the file cannot be located on disk across all search layers.
 /// * Cleans and resolves relative traversal components like `../` before verification. 
 
-fn build_search_paths(header_name: &str) -> Option<PathBuf> {
+fn build_search_paths(header_name: &str, current_file: &Path, project_root: &Path) -> Option<PathBuf> {
+    
     if (path_str.starts_with("<") && path_str.ends_with(">")) {
         // system search
     } else if (path_str.starts_with("\"") && path_str.ends_with("\"")) {
-        // local search first, then system
+        // local search first
         // first search current dir
-        let current_dir = env::current_dir()?;
+        let parent = current_file.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or(project_root);
+        search_dir(parent, header_name);
 
-        for entry in fs::read_dir(current_dir)? {
-            let entry = entry?;
-            let path = entry.path();
+        // search include directory at project root
+        let include_path: PathBuf = project_root.join("include");
+        search_dir(include_path, header_name);
 
-            if path.is_file() {
-                if let Some(file_name) = path.file_name() {
-                    if file_name == header_name {
-                        let file_path = PathBuf::from(file_name);
-                        return file_path;
-                    }
+    }
+}
+
+fn search_dir(dir_path: &PathBuf | &Path, target_name: &str) {
+    for entry in fs::read_dir(dir_path)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.is_file() {
+            if let Some(file_name) = path.file_name() {
+                if file_name == target_name {
+                    let file_path = PathBuf::from(target_name);
+                    return file_path;
                 }
             }
         }
-
-        // then search user include paths
     }
-}
+} 
