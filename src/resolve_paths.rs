@@ -37,6 +37,7 @@ fn build_search_paths(header_name: &str, current_file: &Path, project_root: &Pat
     
     if (path_str.starts_with("<") && path_str.ends_with(">")) {
         // system search
+
     } else if (path_str.starts_with("\"") && path_str.ends_with("\"")) {
         // local search first
         // first search current dir
@@ -50,7 +51,7 @@ fn build_search_paths(header_name: &str, current_file: &Path, project_root: &Pat
     }
 }
 
-fn search_dir(dir_path: &PathBuf | &Path, target_name: &str) {
+fn search_dir(dir_path: &PathBuf | &Path, target_name: &str) -> Option<PathBuf> {
     for entry in fs::read_dir(dir_path)? {
         let entry = entry?;
         let path = entry.path();
@@ -65,3 +66,21 @@ fn search_dir(dir_path: &PathBuf | &Path, target_name: &str) {
         }
     }
 } 
+
+/// Given the name of a library, attempts to find the the path from pkg-config.
+fn get_pkg_config_dirs(lib_name: &str) -> Option<Vec<PathBuf>> {
+    let output = Command::new("pkg-config")
+        .args(["--cflags-only-I", lib_name])
+        .output()
+        .ok()?;
+
+    if !output.status.success() {
+        let err_msg = String::from_utf8_lossy(&output.stderr);
+
+        eprintln!("pkg-config failed for library '{}': {}", lib_name, err_msg.trim());
+        return None;
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Some(stdout.split_whitespace().filter_map(|tok| tok.strip_prefix("-I")).map(PathBuf::from).collect(), )
+}
