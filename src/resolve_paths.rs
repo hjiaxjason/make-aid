@@ -1,3 +1,6 @@
+//! The function of this file is resolving references, whether from Makefile prerequisites or
+//! #includes into actual filesystem paths. There are two distinct resolution strategies: resolving
+//! project-relative file, or external dependency (using pkg-config/system include paths).
 use std::path::PathBuf;
 use std::env;
 use std::fs;
@@ -83,4 +86,19 @@ fn get_pkg_config_dirs(lib_name: &str) -> Option<Vec<PathBuf>> {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     Some(stdout.split_whitespace().filter_map(|tok| tok.strip_prefix("-I")).map(PathBuf::from).collect(), )
+}
+
+fn get_fallback_dirs(lib_name: &str) -> Option<Vec<PathBuf>> {
+    #[cfg(target_os = "linux")]
+    {
+        vec![PathBuf::from("/usr/lib/pkgconfig"), /* ... */]
+    }
+    #[cfg(target_os = "macos")]
+    {
+        vec![PathBuf::from("/opt/homebrew/lib/pkgconfig"), /* ... */]
+    }
+    #[cfg(target_os = "windows")]
+    {
+        vec![/* ... */]
+    }
 }
