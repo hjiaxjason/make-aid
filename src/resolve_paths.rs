@@ -88,7 +88,8 @@ fn get_pkg_config_dirs(lib_name: &str) -> Option<Vec<PathBuf>> {
     Some(stdout.split_whitespace().filter_map(|tok| tok.strip_prefix("-I")).map(PathBuf::from).collect(), )
 }
 
-fn get_fallback_dirs(lib_name: &str) -> Option<Vec<PathBuf>> {
+/// Based on operating system, get fallback directory name
+fn get_fallback_dirs() -> Option<Vec<PathBuf>> {
     #[cfg(target_os = "linux")]
     {
         vec![PathBuf::from("/usr/lib/pkgconfig"), /* ... */]
@@ -102,3 +103,14 @@ fn get_fallback_dirs(lib_name: &str) -> Option<Vec<PathBuf>> {
         vec![/* ... */]
     }
 }
+
+/// Searches fallback_dir for .pc file
+fn get_pc_file(fallback_dir: Vec<PathBuf>, lib_name: &str) -> Option<PathBuf> {
+    for path in &fallback_dir {
+        let target_path = path.join("{lib_name}.pc");
+        if fallback_dir.contains(&target_path) {
+            return target_path
+        }
+    }
+}
+
